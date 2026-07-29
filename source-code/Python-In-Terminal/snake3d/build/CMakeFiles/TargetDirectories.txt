@@ -1,0 +1,3 @@
+/home/licheng/LC/Python-In-Terminal/snake3d/build/CMakeFiles/snake3d.dir
+/home/licheng/LC/Python-In-Terminal/snake3d/build/CMakeFiles/edit_cache.dir
+/home/licheng/LC/Python-In-Terminal/snake3d/build/CMakeFiles/rebuild_cache.dir

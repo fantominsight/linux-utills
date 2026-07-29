@@ -1,0 +1,4 @@
+cd /home/licheng/LC/Python-In-Terminal/snake3d/build
+cmake ..
+cmake --build .
+./snake3d

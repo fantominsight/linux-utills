@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=3D Snake
+Comment=A 3D Snake game
+Exec=snake3d
+Icon=snake3d
+Categories=Game;
