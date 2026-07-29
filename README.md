@@ -62,8 +62,8 @@
 
 Управление:
 - Стрелки — направление
-- `P` — пауза
-- `R` — рестарт (после окончания игры)
+- `P`, `SPACE` — пауза
+- `R`, `SPACE` — рестарт (после окончания игры)
 
 **Исходный код и сборка:** [`source-code/Python-In-Terminal/snake3d/`](source-code/Python-In-Terminal/snake3d/)
 
