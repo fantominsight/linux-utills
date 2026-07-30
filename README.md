@@ -12,7 +12,27 @@
 
 ## Утилиты
 
-### 1. MTKConverter
+### 1. FantominsightSU (All-in-One CLI)
+Универсальный системный комбайн с удобным интерактивным меню.
+
+**Возможности:**
+- Поиск программ (`which` / `whereis`)
+- **FantomPing** — проверка доступности серверов и сайтов с замером задержки
+- Системная информация: текущая директория (`pwd`) и имя пользователя (`whoami`)
+- Управление питанием: перезагрузка и выключение компьютера
+
+**Как пользоваться:**
+```bash
+./FantominsightSU
+```
+
+**Исходный код:** [`source-code/CLI/allinone.cpp`](source-code/CLI/allinone.cpp)
+
+**Релиз:** [CLI_v1](https://github.com/fantominsight/linux-utills/releases/tag/CLI_v1)
+
+---
+
+### 2. MTKConverter
 Простой конвертер миль в километры.
 
 **Как пользоваться:**
@@ -26,7 +46,7 @@
 
 ---
 
-### 2. shutdown
+### 3. shutdown
 Утилита для отложенного выключения компьютера.
 
 При запуске открывает новое окно терминала с 30-секундным таймером.  
@@ -45,7 +65,7 @@
 
 ---
 
-### 3. snake3d
+### 4. snake3d
 Полноценная 3D-змейка, написанная с использованием OpenGL (FreeGLUT + GLM).
 
 **Особенности:**
@@ -74,6 +94,7 @@
 1. Скачайте нужный бинарник из папки [`Utills/`](Utills/)
 2. Сделайте его исполняемым:
    ```bash
+   chmod +x FantominsightSU
    chmod +x MTKConverter
    chmod +x shutdown
    chmod +x snake3d
@@ -84,11 +105,16 @@
    ```
 
 **Важно:** в файлах репозитория всегда находятся **только последние версии** бинарников.  
-Старые версии можно скачать в [Releases](../../releases) (когда они появятся) или позже на сайте `download.fantominsight.com`.
+Старые версии можно скачать в [Releases](https://github.com/fantominsight/linux-utills/releases).
 
 ---
 
 ## Сборка из исходников
+
+### FantominsightSU
+```bash
+g++ source-code/CLI/allinone.cpp -o FantominsightSU
+```
 
 ### MTKConverter и shutdown
 ```bash
