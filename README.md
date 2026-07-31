@@ -89,6 +89,29 @@
 
 ---
 
+### 5. FantominsightUI (GUI на Qt6)
+Графический набор сетевых и системных инструментов (Qt 6, C++20).
+
+**Возможности:**
+- 🌐 **Сеть** — проверка сайта (ping + сводка), ping, DNS-запросы (A/AAAA/MX/TXT/CNAME/NS/SRV/PTR), трассировка маршрута, проверка TCP-портов
+- 💻 **Система** — информация о ПК, загрузка CPU в реальном времени, использование RAM, смонтированные диски
+- 🔧 **Инструменты** — хеширование файлов (MD5…SHA3-512), генератор паролей, Base64
+
+**Как пользоваться:**
+```bash
+./FantominsightUI
+```
+
+**Исходный код:** [`source-code/FantominsightUI/`](source-code/FantominsightUI/)
+
+**Сборка (требуется Qt 6 и CMake):**
+```bash
+cmake -S source-code/FantominsightUI -B build
+cmake --build build -j
+```
+
+---
+
 ## Установка / Запуск
 
 1. Скачайте нужный бинарник из папки [`Utills/`](Utills/)
@@ -98,6 +121,7 @@
    chmod +x MTKConverter
    chmod +x shutdown
    chmod +x snake3d
+   chmod +x FantominsightUI
    ```
 3. Запустите:
    ```bash
@@ -125,6 +149,14 @@ g++ -o shutdown source-code/shutdown/main.cpp
 ### snake3d
 Требуется CMake, FreeGLUT, GLM и OpenGL-библиотеки.  
 Подробности сборки смотрите в `CMakeLists.txt` внутри папки проекта.
+
+### FantominsightUI
+Требуется Qt 6 (Widgets, Network) и CMake ≥ 3.16:
+```bash
+cmake -S source-code/FantominsightUI -B build
+cmake --build build -j
+./build/FantominsightUI
+```
 
 ---
 
