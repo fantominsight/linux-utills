@@ -133,6 +133,109 @@ cmake --build build -j
 
 ---
 
+## Возможные проблемы и решения
+
+### 1. `Permission denied` при запуске
+Бинарник не имеет прав на выполнение.
+
+**Решение:**
+```bash
+chmod +x имя_утилиты
+```
+
+---
+
+### 2. FantominsightUI не запускается / ошибка про библиотеки Qt
+Бинарник динамически связан с Qt 6. Если Qt 6 не установлен в системе, программа не запустится.
+
+**Решение (Ubuntu / Debian):**
+```bash
+sudo apt update
+sudo apt install qt6-base-dev libqt6widgets6 libqt6network6
+```
+
+**Решение (Fedora):**
+```bash
+sudo dnf install qt6-qtbase qt6-qtbase-gui
+```
+
+**Решение (Arch):**
+```bash
+sudo pacman -S qt6-base
+```
+
+Если ошибка остаётся — соберите из исходников (см. раздел «Сборка из исходников»).
+
+---
+
+### 3. `shutdown` не открывает окно / ничего не происходит
+Утилита требует `gnome-terminal`.
+
+**Решение:**
+```bash
+sudo apt install gnome-terminal   # Ubuntu/Debian
+# или
+sudo dnf install gnome-terminal   # Fedora
+```
+
+Также команда `poweroff` может требовать прав администратора. В этом случае используйте:
+```bash
+sudo ./shutdown
+```
+
+---
+
+### 4. snake3d не запускается / ошибка OpenGL
+Не хватает библиотек OpenGL / FreeGLUT.
+
+**Решение (Ubuntu / Debian):**
+```bash
+sudo apt install freeglut3 libgl1 libglu1-mesa
+```
+
+**Решение (Fedora):**
+```bash
+sudo dnf install freeglut mesa-libGL mesa-libGLU
+```
+
+---
+
+### 5. Ping / трассировка не работают в FantominsightUI или FantominsightSU
+- Утилита `ping` или `traceroute` не установлена
+- На некоторых системах для `ping` нужны дополнительные права
+
+**Решение:**
+```bash
+sudo apt install iputils-ping traceroute   # Ubuntu/Debian
+sudo dnf install iputils traceroute        # Fedora
+```
+
+Если `ping` пишет «Operation not permitted»:
+```bash
+sudo setcap cap_net_raw+ep $(which ping)
+```
+
+---
+
+### 6. Ошибка `No such file or directory` при запуске бинарника
+Обычно означает, что система не нашла динамическую библиотеку (особенно часто с Qt).
+
+**Диагностика:**
+```bash
+ldd ./FantominsightUI | grep "not found"
+```
+
+Установите недостающие пакеты (см. пункт 2) или соберите программу из исходников.
+
+---
+
+### 7. Бинарник не запускается на другой архитектуре
+Все бинарники собраны под **x86_64**. На ARM (Raspberry Pi, Apple Silicon через эмуляцию и т.д.) они работать не будут.
+
+**Решение:** соберите из исходников на своей машине.
+
+---
+
 ## Сборка из исходников
 
 ### FantominsightSU
