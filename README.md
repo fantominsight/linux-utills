@@ -238,28 +238,100 @@ ldd ./FantominsightUI | grep "not found"
 
 ## Сборка из исходников
 
-### FantominsightSU
+### 1. Где взять исходники
+
+**Вариант A — клонировать репозиторий** (нужен Git):
 ```bash
-g++ source-code/CLI/allinone.cpp -o FantominsightSU
+git clone https://github.com/fantominsight/linux-utills.git
+cd linux-utills
 ```
 
-### MTKConverter и shutdown
+**Вариант B — скачать архив:**
+- На странице репозитория нажмите зелёную кнопку **Code → Download ZIP**
+- Либо в разделе [Releases](https://github.com/fantominsight/linux-utills/releases) — ссылки `Source code (zip)` / `Source code (tar.gz)` у нужной версии
+
+Все исходники лежат в папке **`source-code/`**. Команды ниже выполняются из корня репозитория.
+
+> **Про архитектуру.** Готовые бинарники в `Utills/` собраны под **x86_64**. Для другой архитектуры (ARM64 / AArch64 — Raspberry Pi, многие SBC и серверы; ARM32 / armhf; x86) исходники нужно собирать **нативно, на самой целевой машине** — в этом случае бинарник соберётся под её архитектуру. Инструкции ниже универсальны для любой из них: просто выполните их на нужной системе.
+
+### 2. Общие требования
+
+- Компилятор C++ (g++ или clang++)
+- **CMake** (для FantominsightUI и snake3d)
+
+### 3. Установка зависимостей по ОС
+
+**Ubuntu / Debian** (в т.ч. Raspberry Pi OS):
 ```bash
-g++ -o MTKConverter source-code/MTKConverter/main.cpp
-g++ -o shutdown source-code/shutdown/main.cpp
+sudo apt update
+sudo apt install build-essential cmake git        # компилятор, CMake, Git
+sudo apt install qt6-base-dev libqt6widgets6 libqt6network6   # Qt 6 для FantominsightUI
+sudo apt install freeglut3-dev libglm-dev libgl1-mesa-dev libglu1-mesa-dev  # для snake3d
 ```
 
-### snake3d
-Требуется CMake, FreeGLUT, GLM и OpenGL-библиотеки.  
-Подробности сборки смотрите в `CMakeLists.txt` внутри папки проекта.
+**Fedora / RHEL / CentOS Stream:**
+```bash
+sudo dnf install gcc-c++ cmake git qt6-qtbase-devel freeglut-devel glm-devel mesa-libGL-devel mesa-libGLU-devel
+```
 
-### FantominsightUI
+**Arch Linux / Manjaro:**
+```bash
+sudo pacman -S gcc cmake git qt6-base freeglut glm mesa
+```
+
+**openSUSE:**
+```bash
+sudo zypper install gcc-c++ cmake git qt6-base-devel freeglut-devel glm-devel Mesa-libGL-devel Mesa-libGLU-devel
+```
+
+### 4. Сборка по проектам
+
+#### FantominsightUI (GUI на Qt6) — `source-code/FantominsightUI/`
 Требуется Qt 6 (Widgets, Network) и CMake ≥ 3.16:
 ```bash
-cmake -S source-code/FantominsightUI -B build
-cmake --build build -j
-./build/FantominsightUI
+cmake -S source-code/FantominsightUI -B build-fantominsightui
+cmake --build build-fantominsightui -j
+./build-fantominsightui/FantominsightUI
 ```
+Для работы сетевых функций нужны системные утилиты `ping` и `traceroute` (см. раздел «Возможные проблемы»).
+
+#### FantominsightSU (All-in-One CLI) — `source-code/CLI/allinone.cpp`
+```bash
+g++ source-code/CLI/allinone.cpp -o FantominsightSU
+./FantominsightSU
+```
+
+#### MTKConverter — `source-code/MTKConverter/main.cpp`
+```bash
+g++ source-code/MTKConverter/main.cpp -o MTKConverter
+./MTKConverter
+```
+
+#### shutdown — `source-code/shutdown/main.cpp`
+```bash
+g++ source-code/shutdown/main.cpp -o shutdown
+```
+Для запуска требуется `gnome-terminal`, а команда `poweroff` может требовать прав администратора (`sudo ./shutdown`).
+
+#### snake3d — `source-code/Python-In-Terminal/snake3d/`
+Требуются FreeGLUT, GLM и OpenGL-библиотеки:
+```bash
+cmake -S source-code/Python-In-Terminal/snake3d -B build-snake3d
+cmake --build build-snake3d -j
+./build-snake3d/snake3d
+```
+> **Примечание:** `CMakeLists.txt` этого проекта заточен под локальный sysroot автора (`/tmp/local/sysroot`). На «чистой» системе может потребоваться поправить пути в этом файле либо собрать вручную против системных библиотек:
+> ```bash
+> g++ source-code/Python-In-Terminal/snake3d/src/main.cpp -o snake3d -lglut -lGLU -lGL -lm
+> ```
+
+### 5. Где окажется результат
+
+Собранные бинарники появятся в указанной при сборке папке (`build-fantominsightui/`, `build-snake3d/` и т.д.) или в текущей директории (для `g++`). Папки сборки (`build*/`, `cmake-build-*/`) в репозиторий **не** добавляются — они игнорируются файлом `.gitignore`.
+
+### 6. Windows
+
+Для Windows существует отдельный порт FantominsightUI — репозиторий [fantominsight/windows-utills](https://github.com/fantominsight/windows-utills) (исходники и инструкции по сборке там же).
 
 ---
 
