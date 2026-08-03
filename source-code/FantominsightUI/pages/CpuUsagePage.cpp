@@ -1,3 +1,4 @@
+// Страница «Загрузка CPU»: мониторинг нагрузки на процессор через /proc/stat
 #include "CpuUsagePage.h"
 
 #include <QFile>
@@ -5,8 +6,10 @@
 #include <QProgressBar>
 #include <QVBoxLayout>
 
+// Конструктор: собираем интерфейс и запускаем таймер обновления
 CpuUsagePage::CpuUsagePage(QWidget* parent)
     : Page(parent) {
+    // Корневой вертикальный лейаут
     auto* root = new QVBoxLayout(this);
     root->setContentsMargins(32, 28, 32, 28);
     root->setSpacing(20);
@@ -15,11 +18,13 @@ CpuUsagePage::CpuUsagePage(QWidget* parent)
     titleLabel->setObjectName(QStringLiteral("pageTitle"));
     root->addWidget(titleLabel);
 
+    // Крупная цифра загрузки в процентах (по центру, растягивается)
     m_valueLabel = new QLabel(QStringLiteral("—"), this);
     m_valueLabel->setAlignment(Qt::AlignCenter);
     m_valueLabel->setStyleSheet(QStringLiteral("font-size:34pt; font-weight:600; color:#1f232b;"));
     root->addWidget(m_valueLabel, 1);
 
+    // Полоса прогресса (проценты спрятаны — главное число выше)
     m_bar = new QProgressBar(this);
     m_bar->setRange(0, 100);
     m_bar->setTextVisible(false);
@@ -29,30 +34,41 @@ CpuUsagePage::CpuUsagePage(QWidget* parent)
         "QProgressBar::chunk { background-color:#4b8cf8; border-radius:8px; }"));
     root->addWidget(m_bar);
 
+    // Поясняющая надпись под полосой
     m_infoLabel = new QLabel(this);
     m_infoLabel->setObjectName(QStringLiteral("description"));
     m_infoLabel->setAlignment(Qt::AlignCenter);
     root->addWidget(m_infoLabel);
 
+    // Таймер на 1 секунду — периодически вызываем refresh()
     m_timer.setInterval(1000);
     connect(&m_timer, &QTimer::timeout, this, &CpuUsagePage::refresh);
     m_timer.start();
 
-    m_previous = readCpuTimes();
+    m_previous = readCpuTimes();  // сохраняем стартовое значение для первого расчёта
 }
 
+/*
+    Читает время CPU из /proc/stat.
+    Первая строка файла начинается с "cpu" и содержит счётчики тиков:
+    user nice system idle iowait irq softirq steal ...
+    Возвращает пару (время простоя + iowait, общее время).
+*/
 QPair<quint64, quint64> CpuUsagePage::readCpuTimes() {
     QFile file(QStringLiteral("/proc/stat"));
     if (!file.open(QIODevice::ReadOnly)) {
-        return {0, 0};
+        return {0, 0};  // не удалось открыть — возвращаем нули
     }
+    // Разбиваем первую строку на числа
     const QStringList parts =
         QString::fromLatin1(file.readLine()).trimmed().split(QLatin1Char(' '), Qt::SkipEmptyParts);
     if (parts.size() < 5 || parts.first() != QLatin1String("cpu")) {
-        return {0, 0};
+        return {0, 0};  // неожиданный формат
     }
     quint64 total = 0;
     quint64 idle = 0;
+    // Суммируем все счётчики (позиции 1..8) в общее время;
+    // idle (4-й) и iowait (5-й) считаем «простоем»
     for (int i = 1; i < parts.size() && i <= 8; ++i) {
         const quint64 value = parts[i].toULongLong();
         total += value;
@@ -63,16 +79,19 @@ QPair<quint64, quint64> CpuUsagePage::readCpuTimes() {
     return {idle, total};
 }
 
+// Слот таймера: пересчитываем загрузку по разнице между двумя замерами
 void CpuUsagePage::refresh() {
     const auto current = readCpuTimes();
     double percent = 0.0;
     if (m_previous.second > 0 && current.second > m_previous.second) {
+        // Загрузка = (общее время − время простоя) / общее время за интервал
         const quint64 dTotal = current.second - m_previous.second;
         const quint64 dIdle = current.first - m_previous.first;
         percent = 100.0 * (1.0 - (static_cast<double>(dIdle) / static_cast<double>(dTotal)));
     }
-    m_previous = current;
+    m_previous = current;  // запоминаем текущие значения для следующего тика
 
+    // Округляем и ограничиваем диапазоном [0, 100]
     const int rounded = qBound(0, int(percent + 0.5), 100);
     m_bar->setValue(rounded);
     m_valueLabel->setText(QStringLiteral("%1%").arg(QString::number(percent, 'f', 1)));

@@ -11,6 +11,8 @@
 
 namespace {
 
+// Глобальная таблица стилей приложения (CSS-подобный синтаксис Qt Style Sheets).
+// Задаёт тёмную панель навигации, цвета кнопок, полей ввода и прочих виджетов.
 const char kStyleSheet[] = R"(
     QMainWindow { background-color: #f5f6f8; }
 
@@ -102,71 +104,94 @@ const char kStyleSheet[] = R"(
 
 }  // namespace
 
+/*
+    Конструктор главного окна.
+    Собирает каркас: центральный виджет с горизонтальным лейаутом,
+    внутри слева — панель навигации, справа — стек страниц.
+*/
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent) {
     setWindowTitle(QStringLiteral("Набор сетевых и системных инструментов"));
     resize(820, 580);
-    setStyleSheet(QString::fromUtf8(kStyleSheet));
+    setStyleSheet(QString::fromUtf8(kStyleSheet));  // применяем глобальный стиль
 
+    // Центральный виджет и корневой горизонтальный лейаут (навигация | контент)
     auto* central = new QWidget(this);
     auto* rootLayout = new QHBoxLayout(central);
     rootLayout->setContentsMargins(0, 0, 0, 0);
     rootLayout->setSpacing(0);
 
+    // Левая панель навигации фиксированной ширины
     auto* navPanel = new QWidget(central);
     navPanel->setObjectName(QStringLiteral("navPanel"));
     navPanel->setFixedWidth(212);
 
+    // Скроллируемая область внутри панели — на случай множества пунктов
     auto* navScroll = new QScrollArea(navPanel);
     navScroll->setWidgetResizable(true);
     navScroll->setFrameShape(QFrame::NoFrame);
     navScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
+    // Контейнер с вертикальным списком: заголовки групп и кнопки страниц
     auto* navContent = new QWidget(navScroll);
     navContent->setObjectName(QStringLiteral("navPanel"));
     m_navLayout = new QVBoxLayout(navContent);
     m_navLayout->setContentsMargins(8, 10, 8, 14);
     m_navLayout->setSpacing(2);
-    m_navLayout->addStretch(1);
+    m_navLayout->addStretch(1);  // прижимаем список к верху, снизу оставляем пустоту
     navScroll->setWidget(navContent);
 
+    // Оборачиваем скролл-область в вертикальный лейаут панели
     auto* navVBox = new QVBoxLayout(navPanel);
     navVBox->setContentsMargins(0, 0, 0, 0);
     navVBox->setSpacing(0);
     navVBox->addWidget(navScroll);
 
-    rootLayout->addWidget(navPanel);
+    rootLayout->addWidget(navPanel);  // панель — слева
 
+    // Стек страниц — справа, растягивается на всё оставшееся место
     m_stack = new QStackedWidget(central);
     rootLayout->addWidget(m_stack, 1);
 
-    setCentralWidget(central);
+    setCentralWidget(central);  // устанавливаем центральный виджет окна
 
+    // Группа кнопок навигации с эксклюзивным поведением (как радиокнопки:
+    // всегда нажата ровно одна). Клик по кнопке переключает страницу.
     m_navGroup = new QButtonGroup(this);
     m_navGroup->setExclusive(true);
     connect(m_navGroup, &QButtonGroup::idClicked, this, &MainWindow::onNavButtonClicked);
 }
 
+// Добавляет заголовок группы (например "🌐 Сеть") в панель навигации
 void MainWindow::addGroup(const QString& title) {
     auto* label = new QLabel(title);
     label->setObjectName(QStringLiteral("navGroup"));
     insertNavItem(label);
 }
 
+// Вставляет элемент навигации перед нижней "пружиной" (растяжкой),
+// чтобы новые пункты добавлялись в конец списка
 void MainWindow::insertNavItem(QWidget* item) {
     m_navLayout->insertWidget(m_navLayout->count() - 1, item);
 }
 
+/*
+    Реальная реализация добавления страницы:
+    кладёт страницу в стек, создаёт для неё кнопку в навигации
+    и связывает кнопку с индексом страницы.
+*/
 Page* MainWindow::addPageImpl(Page* page) {
-    const int index = m_stack->count();
-    m_stack->addWidget(page);
+    const int index = m_stack->count();  // индекс новой страницы в стеке
+    m_stack->addWidget(page);            // добавляем страницу в стек
 
+    // Кнопка навигации с названием страницы
     auto* button = new QPushButton(page->title());
-    button->setCheckable(true);
+    button->setCheckable(true);  // кнопка "залипающая" — отмечает выбранную страницу
     button->setObjectName(QStringLiteral("navButton"));
-    m_navGroup->addButton(button, index);
+    m_navGroup->addButton(button, index);  // id кнопки = индекс страницы
     insertNavItem(button);
 
+    // Первая добавленная страница становится активной по умолчанию
     if (index == 0) {
         button->setChecked(true);
         m_stack->setCurrentIndex(0);
@@ -175,6 +200,7 @@ Page* MainWindow::addPageImpl(Page* page) {
     return page;
 }
 
+// Слот: при клике по кнопке навигации показываем соответствующую страницу
 void MainWindow::onNavButtonClicked(int id) {
     if (id >= 0 && id < m_stack->count()) {
         m_stack->setCurrentIndex(id);
